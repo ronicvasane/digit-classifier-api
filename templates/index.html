@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Digit Classifier</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 50px auto;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 { color: #16324f; }
+        #imagePreview {
+            max-width: 200px;
+            margin: 20px auto;
+            display: none;
+        }
+        button {
+            background: #16324f;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover { background: #1e4468; }
+        #result {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔢 Digit Classifier</h1>
+    <p>Upload an image of a handwritten digit (0-9)</p>
+
+    <input type="file" id="imageInput" accept="image/*">
+    <br>
+    <img id="imagePreview">
+    <br>
+    <button onclick="predict()">Predict</button>
+
+    <div id="result"></div>
+
+    <script>
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const resultDiv = document.getElementById('result');
+
+        imageInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                imagePreview.src = URL.createObjectURL(file);
+                imagePreview.style.display = 'block';
+            }
+        });
+
+        async function predict() {
+            const file = imageInput.files[0];
+            if (!file) {
+                alert('Please select an image first!');
+                return;
+            }
+
+            resultDiv.innerHTML = 'Predicting...';
+
+            const formData = new FormData();
+            formData.append('image', file);
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                resultDiv.innerHTML = `Predicted Digit: ${data.predicted_digit} <br> Confidence: ${(data.confidence * 100).toFixed(1)}%`;
+            } catch (error) {
+                resultDiv.innerHTML = 'Error: Could not get prediction';
+            }
+        }
+    </script>
+</body>
+</html>
